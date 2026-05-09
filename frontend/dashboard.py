@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 # ─── Page Config ──────────────────────────────────────────────
-def setup_page():
+def setup_page(theme="Dark"):
     st.set_page_config(
         page_title="AI Test Generator",
         page_icon="🧪",
@@ -51,28 +51,41 @@ def setup_page():
         initial_sidebar_state="expanded"
     )
     
+    if theme == "Light":
+        bg_color = "#f8fafc"
+        bg_secondary = "#ffffff"
+        text_color = "#334155"
+        text_muted = "#64748b"
+        border_color = "#e2e8f0"
+    else:
+        bg_color = "#0f172a"
+        bg_secondary = "#1e293b"
+        text_color = "#e2e8f0"
+        text_muted = "#94a3b8"
+        border_color = "#334155"
+
     # Custom CSS
-    st.markdown("""
+    st.markdown(f"""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
-        .stApp {
+        .stApp {{
             font-family: 'Inter', sans-serif;
-        }
+            background-color: {bg_color};
+            color: {text_color};
+        }}
         
-        /* Dark theme overrides */
-        .stApp { background-color: #0f172a; }
-        
-        .stTextArea textarea {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
-            border: 1px solid #334155 !important;
+        /* Dark/Light theme overrides */
+        .stTextArea textarea {{
+            background-color: {bg_secondary} !important;
+            color: {text_color} !important;
+            border: 1px solid {border_color} !important;
             border-radius: 8px !important;
             font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
             font-size: 0.85rem !important;
-        }
+        }}
         
-        .stButton > button {
+        .stButton > button {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: white !important;
             border: none !important;
@@ -81,66 +94,66 @@ def setup_page():
             font-weight: 600 !important;
             font-size: 0.9rem !important;
             transition: all 0.3s ease !important;
-        }
+        }}
         
-        .stButton > button:hover {
+        .stButton > button:hover {{
             transform: translateY(-2px) !important;
             box-shadow: 0 8px 25px rgba(102,126,234,0.4) !important;
-        }
+        }}
         
-        .stSelectbox > div > div {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
+        .stSelectbox > div > div {{
+            background-color: {bg_secondary} !important;
+            border: 1px solid {border_color} !important;
             border-radius: 8px !important;
-            color: #e2e8f0 !important;
-        }
+            color: {text_color} !important;
+        }}
         
-        .stTabs [data-baseweb="tab-list"] {
+        .stTabs [data-baseweb="tab-list"] {{
             gap: 8px;
-        }
+        }}
         
-        .stTabs [data-baseweb="tab"] {
-            background-color: #1e293b;
+        .stTabs [data-baseweb="tab"] {{
+            background-color: {bg_secondary};
             border-radius: 8px;
-            color: #94a3b8;
+            color: {text_muted};
             padding: 8px 16px;
-        }
+        }}
         
-        .stTabs [aria-selected="true"] {
+        .stTabs [aria-selected="true"] {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: white !important;
-        }
+        }}
         
-        .stExpander {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 10px;
-        }
+        .stExpander {{
+            background-color: {bg_secondary} !important;
+            border: 1px solid {border_color} !important;
+            border-radius: 10px !important;
+        }}
         
-        h1, h2, h3, h4 { color: #e2e8f0 !important; }
-        p, li { color: #cbd5e1; }
+        h1, h2, h3, h4 {{ color: {text_color} !important; }}
+        p, li {{ color: {text_color}; }}
         
-        .stCodeBlock { border-radius: 10px !important; }
+        .stCodeBlock {{ border-radius: 10px !important; }}
         
-        div[data-testid="stSidebar"] {
-            background-color: #0f172a;
-            border-right: 1px solid #1e293b;
-        }
+        div[data-testid="stSidebar"] {{
+            background-color: {bg_color};
+            border-right: 1px solid {border_color};
+        }}
         
-        .stFileUploader {
-            background-color: #1e293b;
-            border: 2px dashed #334155;
+        .stFileUploader {{
+            background-color: {bg_secondary};
+            border: 2px dashed {border_color};
             border-radius: 12px;
             padding: 1rem;
-        }
+        }}
         
         /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar {{ width: 6px; height: 6px; }}
+        ::-webkit-scrollbar-track {{ background: {bg_color}; }}
+        ::-webkit-scrollbar-thumb {{ background: {border_color}; border-radius: 3px; }}
+        ::-webkit-scrollbar-thumb:hover {{ background: {text_muted}; }}
         
-        .block-container { padding: 1rem 2rem !important; }
+        .block-container {{ padding: 1rem 2rem !important; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -158,6 +171,12 @@ def render_sidebar():
             ">⚙️ Settings</h2>
         </div>
         """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Theme Setting
+        st.markdown("### 🎨 Appearance")
+        selected_theme = st.radio("Theme Mode", ["Dark", "Light"], horizontal=True, key="theme")
         
         st.markdown("---")
         
@@ -232,7 +251,10 @@ def render_sidebar():
 
 # ─── Main Dashboard ──────────────────────────────────────────
 def run_dashboard():
-    setup_page()
+    if "theme" not in st.session_state:
+        st.session_state.theme = "Dark"
+        
+    setup_page(st.session_state.theme)
     render_header()
     settings = render_sidebar()
     
@@ -291,7 +313,7 @@ def run_dashboard():
     
     # ─── Pipeline Status ──────────────────────────────────────
     st.markdown("### 🔄 Pipeline Status")
-    render_pipeline_status(st.session_state.pipeline_status)
+    render_pipeline_status(st.session_state.pipeline_status, st.session_state.theme)
     st.markdown("")
     
     # ─── Action Buttons ───────────────────────────────────────
@@ -466,6 +488,7 @@ def run_full_pipeline(settings):
 
 def display_results(settings):
     """Display all pipeline results."""
+    theme = st.session_state.get("theme", "Dark")
     
     # ─── Analysis Results ─────────────────────────────────────
     if st.session_state.analysis:
@@ -477,14 +500,14 @@ def display_results(settings):
         # Metrics row
         m1, m2, m3, m4 = st.columns(4)
         with m1:
-            render_metric_card("Functions", str(analysis.total_functions), icon="⚡", color="#667eea")
+            render_metric_card("Functions", str(analysis.total_functions), icon="⚡", color="#667eea", theme=theme)
         with m2:
-            render_metric_card("Branches", str(analysis.total_branches), icon="🔀", color="#764ba2")
+            render_metric_card("Branches", str(analysis.total_branches), icon="🔀", color="#764ba2", theme=theme)
         with m3:
-            render_metric_card("Complexity", f"{analysis.avg_complexity:.1f}", "average", icon="📈", color="#f59e0b")
+            render_metric_card("Complexity", f"{analysis.avg_complexity:.1f}", "average", icon="📈", color="#f59e0b", theme=theme)
         with m4:
             loc = count_lines_of_code(st.session_state.source_code)
-            render_metric_card("Lines", str(loc["code"]), f"({loc['comments']} comments)", icon="📄", color="#10b981")
+            render_metric_card("Lines", str(loc["code"]), f"({loc['comments']} comments)", icon="📄", color="#10b981", theme=theme)
         
         # Function details
         with st.expander("🔍 Function Details", expanded=False):
@@ -501,7 +524,7 @@ def display_results(settings):
         
         # Complexity chart
         if analysis.functions:
-            fig = render_complexity_chart(analysis.functions)
+            fig = render_complexity_chart(analysis.functions, theme)
             if fig:
                 st.plotly_chart(fig, use_container_width=True)
     
@@ -534,11 +557,11 @@ def display_results(settings):
                 vr = st.session_state.validation_result
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    render_metric_card("Tests Found", str(vr.get("test_count", 0)), icon="🧪", color="#667eea")
+                    render_metric_card("Tests Found", str(vr.get("test_count", 0)), icon="🧪", color="#667eea", theme=theme)
                 with col2:
-                    render_metric_card("Quality Score", f"{vr.get('quality_score', 0):.0f}%", icon="⭐", color="#f59e0b")
+                    render_metric_card("Quality Score", f"{vr.get('quality_score', 0):.0f}%", icon="⭐", color="#f59e0b", theme=theme)
                 with col3:
-                    render_metric_card("Duplicates", str(vr.get("duplicate_count", 0)), icon="🔄", color="#ef4444")
+                    render_metric_card("Duplicates", str(vr.get("duplicate_count", 0)), icon="🔄", color="#ef4444", theme=theme)
                 
                 if vr.get("errors"):
                     for err in vr["errors"]:
@@ -556,16 +579,16 @@ def display_results(settings):
         
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            render_metric_card("Total Tests", str(er["total"]), icon="🧪", color="#667eea")
+            render_metric_card("Total Tests", str(er["total"]), icon="🧪", color="#667eea", theme=theme)
         with col2:
-            render_metric_card("Passed", str(er["passed"]), icon="✅", color="#10b981")
+            render_metric_card("Passed", str(er["passed"]), icon="✅", color="#10b981", theme=theme)
         with col3:
-            render_metric_card("Failed", str(er["failed"]), icon="❌", color="#ef4444")
+            render_metric_card("Failed", str(er["failed"]), icon="❌", color="#ef4444", theme=theme)
         with col4:
-            render_metric_card("Time", f"{er['execution_time']:.2f}s", icon="⏱️", color="#8b5cf6")
+            render_metric_card("Time", f"{er['execution_time']:.2f}s", icon="⏱️", color="#8b5cf6", theme=theme)
         
         # Results chart
-        fig = render_test_results_chart(er["passed"], er["failed"], er["errors"])
+        fig = render_test_results_chart(er["passed"], er["failed"], er["errors"], theme)
         if fig:
             st.plotly_chart(fig, use_container_width=True)
         
@@ -589,20 +612,20 @@ def display_results(settings):
         
         col1, col2 = st.columns(2)
         with col1:
-            fig = render_coverage_gauge(cr.get("line_coverage", 0), "Line Coverage")
+            fig = render_coverage_gauge(cr.get("line_coverage", 0), "Line Coverage", theme)
             st.plotly_chart(fig, use_container_width=True)
         with col2:
-            fig = render_coverage_gauge(cr.get("branch_coverage", 0), "Branch Coverage")
+            fig = render_coverage_gauge(cr.get("branch_coverage", 0), "Branch Coverage", theme)
             st.plotly_chart(fig, use_container_width=True)
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            render_metric_card("Statements", str(cr.get("total_statements", 0)), icon="📄", color="#667eea")
+            render_metric_card("Statements", str(cr.get("total_statements", 0)), icon="📄", color="#667eea", theme=theme)
         with col2:
-            render_metric_card("Covered", str(cr.get("covered_statements", 0)), icon="✅", color="#10b981")
+            render_metric_card("Covered", str(cr.get("covered_statements", 0)), icon="✅", color="#10b981", theme=theme)
         with col3:
             missing = cr.get("total_statements", 0) - cr.get("covered_statements", 0)
-            render_metric_card("Missing", str(missing), icon="⚠️", color="#f59e0b")
+            render_metric_card("Missing", str(missing), icon="⚠️", color="#f59e0b", theme=theme)
         
         if cr.get("report"):
             with st.expander("📋 Coverage Report", expanded=False):
@@ -621,20 +644,21 @@ def display_results(settings):
         
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            render_metric_card("Original", str(dup.get("original_count", 0)), icon="📝", color="#667eea")
+            render_metric_card("Original", str(dup.get("original_count", 0)), icon="📝", color="#667eea", theme=theme)
         with col2:
-            render_metric_card("Removed", str(dup.get("removed_count", 0)), "duplicates", icon="🗑️", color="#ef4444")
+            render_metric_card("Removed", str(dup.get("removed_count", 0)), "duplicates", icon="🗑️", color="#ef4444", theme=theme)
         with col3:
-            render_metric_card("Final", str(dup.get("final_count", 0)), icon="✅", color="#10b981")
+            render_metric_card("Final", str(dup.get("final_count", 0)), icon="✅", color="#10b981", theme=theme)
         with col4:
-            render_metric_card("High Priority", str(pri.get("high_priority", 0)), icon="🔴", color="#f59e0b")
+            render_metric_card("High Priority", str(pri.get("high_priority", 0)), icon="🔴", color="#f59e0b", theme=theme)
         
         # Priority chart
         if pri.get("total", 0) > 0:
             fig = render_priority_chart(
                 pri.get("high_priority", 0),
                 pri.get("medium_priority", 0),
-                pri.get("low_priority", 0)
+                pri.get("low_priority", 0),
+                theme
             )
             st.plotly_chart(fig, use_container_width=True)
         

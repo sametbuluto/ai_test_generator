@@ -8,6 +8,25 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 
+def get_theme_colors(theme):
+    if theme == "Light":
+        return {
+            "bg": "#f8fafc",
+            "bg_card": "#ffffff",
+            "text": "#334155",
+            "text_muted": "#64748b",
+            "border": "#e2e8f0",
+            "grid": "#e2e8f0"
+        }
+    return {
+        "bg": "#0f172a",
+        "bg_card": "#1e293b",
+        "text": "#e2e8f0",
+        "text_muted": "#94a3b8",
+        "border": "#334155",
+        "grid": "#1e293b"
+    }
+
 
 def render_header():
     """Render the application header."""
@@ -33,20 +52,22 @@ def render_header():
     """, unsafe_allow_html=True)
 
 
-def render_metric_card(title: str, value: str, subtitle: str = "", icon: str = "📊", color: str = "#667eea"):
+def render_metric_card(title: str, value: str, subtitle: str = "", icon: str = "📊", color: str = "#667eea", theme: str = "Dark"):
     """Render a styled metric card."""
+    t = get_theme_colors(theme)
     st.markdown(f"""
     <div style="
         background: linear-gradient(135deg, {color}15, {color}08);
-        border: 1px solid {color}30;
+        background-color: {t['bg_card']};
+        border: 1px solid {t['border']};
         border-radius: 12px;
         padding: 1.25rem;
         text-align: center;
     ">
         <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">{icon}</div>
         <div style="font-size: 1.8rem; font-weight: 700; color: {color};">{value}</div>
-        <div style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-top: 0.2rem;">{title}</div>
-        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.1rem;">{subtitle}</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: {t['text']}; margin-top: 0.2rem;">{title}</div>
+        <div style="font-size: 0.75rem; color: {t['text_muted']}; margin-top: 0.1rem;">{subtitle}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -74,27 +95,28 @@ def render_status_badge(status: str, text: str = ""):
     """, unsafe_allow_html=True)
 
 
-def render_coverage_gauge(coverage: float, label: str = "Line Coverage"):
+def render_coverage_gauge(coverage: float, label: str = "Line Coverage", theme: str = "Dark"):
     """Render a coverage gauge chart."""
+    t = get_theme_colors(theme)
     color = "#10b981" if coverage >= 80 else "#f59e0b" if coverage >= 50 else "#ef4444"
     
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=coverage,
-        number={"suffix": "%", "font": {"size": 36, "color": "#e2e8f0"}},
-        title={"text": label, "font": {"size": 14, "color": "#94a3b8"}},
+        number={"suffix": "%", "font": {"size": 36, "color": t["text"]}},
+        title={"text": label, "font": {"size": 14, "color": t["text_muted"]}},
         gauge={
-            "axis": {"range": [0, 100], "tickfont": {"color": "#64748b"}},
+            "axis": {"range": [0, 100], "tickfont": {"color": t["text_muted"]}},
             "bar": {"color": color},
-            "bgcolor": "#1e293b",
-            "bordercolor": "#334155",
+            "bgcolor": t["bg_card"],
+            "bordercolor": t["border"],
             "steps": [
-                {"range": [0, 50], "color": "#1e293b"},
-                {"range": [50, 80], "color": "#1e293b"},
-                {"range": [80, 100], "color": "#1e293b"},
+                {"range": [0, 50], "color": t["bg_card"]},
+                {"range": [50, 80], "color": t["bg_card"]},
+                {"range": [80, 100], "color": t["bg_card"]},
             ],
             "threshold": {
-                "line": {"color": "#e2e8f0", "width": 2},
+                "line": {"color": t["text"], "width": 2},
                 "thickness": 0.75,
                 "value": coverage
             }
@@ -105,13 +127,14 @@ def render_coverage_gauge(coverage: float, label: str = "Line Coverage"):
         margin=dict(l=20, r=20, t=40, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#e2e8f0"}
+        font={"color": t["text"]}
     )
     return fig
 
 
-def render_test_results_chart(passed: int, failed: int, errors: int):
+def render_test_results_chart(passed: int, failed: int, errors: int, theme: str = "Dark"):
     """Render test results as a donut chart."""
+    t = get_theme_colors(theme)
     labels = ["Passed", "Failed", "Errors"]
     values = [passed, failed, errors]
     colors = ["#10b981", "#ef4444", "#f59e0b"]
@@ -129,7 +152,7 @@ def render_test_results_chart(passed: int, failed: int, errors: int):
         hole=0.6,
         marker_colors=colors,
         textinfo="label+value",
-        textfont={"size": 13, "color": "#e2e8f0"},
+        textfont={"size": 13, "color": t["text"]},
         hoverinfo="label+percent+value"
     )])
     fig.update_layout(
@@ -137,40 +160,42 @@ def render_test_results_chart(passed: int, failed: int, errors: int):
         margin=dict(l=20, r=20, t=30, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#e2e8f0"},
+        font={"color": t["text"]},
         showlegend=True,
-        legend=dict(font=dict(color="#94a3b8"))
+        legend=dict(font=dict(color=t["text_muted"]))
     )
     return fig
 
 
-def render_priority_chart(high: int, medium: int, low: int):
+def render_priority_chart(high: int, medium: int, low: int, theme: str = "Dark"):
     """Render priority distribution chart."""
+    t = get_theme_colors(theme)
     fig = go.Figure(data=[go.Bar(
         x=["🔴 High", "🟡 Medium", "🟢 Low"],
         y=[high, medium, low],
         marker_color=["#ef4444", "#f59e0b", "#10b981"],
         text=[high, medium, low],
         textposition="outside",
-        textfont={"color": "#e2e8f0", "size": 14}
+        textfont={"color": t["text"], "size": 14}
     )])
     fig.update_layout(
         height=250,
         margin=dict(l=20, r=20, t=30, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(tickfont=dict(color="#94a3b8")),
-        yaxis=dict(tickfont=dict(color="#64748b"), gridcolor="#1e293b"),
-        font={"color": "#e2e8f0"}
+        xaxis=dict(tickfont=dict(color=t["text_muted"])),
+        yaxis=dict(tickfont=dict(color=t["text_muted"]), gridcolor=t["grid"]),
+        font={"color": t["text"]}
     )
     return fig
 
 
-def render_complexity_chart(functions: list):
+def render_complexity_chart(functions: list, theme: str = "Dark"):
     """Render function complexity chart."""
     if not functions:
         return None
     
+    t = get_theme_colors(theme)
     names = [f.name for f in functions]
     complexities = [f.complexity for f in functions]
     branches = [f.branch_count for f in functions]
@@ -182,7 +207,7 @@ def render_complexity_chart(functions: list):
         marker_color="#667eea",
         text=complexities,
         textposition="outside",
-        textfont={"color": "#e2e8f0"}
+        textfont={"color": t["text"]}
     ))
     fig.add_trace(go.Bar(
         name="Branches",
@@ -190,7 +215,7 @@ def render_complexity_chart(functions: list):
         marker_color="#764ba2",
         text=branches,
         textposition="outside",
-        textfont={"color": "#e2e8f0"}
+        textfont={"color": t["text"]}
     ))
     fig.update_layout(
         barmode='group',
@@ -198,29 +223,30 @@ def render_complexity_chart(functions: list):
         margin=dict(l=20, r=20, t=30, b=20),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(tickfont=dict(color="#94a3b8")),
-        yaxis=dict(tickfont=dict(color="#64748b"), gridcolor="#1e293b"),
-        font={"color": "#e2e8f0"},
-        legend=dict(font=dict(color="#94a3b8"))
+        xaxis=dict(tickfont=dict(color=t["text_muted"])),
+        yaxis=dict(tickfont=dict(color=t["text_muted"]), gridcolor=t["grid"]),
+        font={"color": t["text"]},
+        legend=dict(font=dict(color=t["text_muted"]))
     )
     return fig
 
 
-def render_pipeline_status(steps: dict):
+def render_pipeline_status(steps: dict, theme: str = "Dark"):
     """Render pipeline progress indicator."""
+    t = get_theme_colors(theme)
     icons = {
         "analyze": "🔍", "generate": "🤖", "validate": "✅",
         "execute": "▶️", "coverage": "📊", "optimize": "⚡"
     }
     status_colors = {
         "done": "#10b981", "running": "#667eea",
-        "pending": "#475569", "error": "#ef4444"
+        "pending": t["text_muted"], "error": "#ef4444"
     }
     
     cols = st.columns(len(steps))
     for i, (step, status) in enumerate(steps.items()):
         with cols[i]:
-            color = status_colors.get(status, "#475569")
+            color = status_colors.get(status, t["text_muted"])
             icon = icons.get(step, "•")
             st.markdown(f"""
             <div style="text-align:center;">
