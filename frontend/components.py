@@ -11,63 +11,136 @@ import plotly.express as px
 def get_theme_colors(theme):
     if theme == "Light":
         return {
-            "bg": "#f8fafc",
-            "bg_card": "#ffffff",
-            "text": "#334155",
-            "text_muted": "#64748b",
-            "border": "#e2e8f0",
-            "grid": "#e2e8f0"
+            "bg": "#EEF2F6",
+            "bg_card": "#EEF2F6",
+            "bg_sidebar": "#EEF2F6",
+            "text": "#1E293B",
+            "text_secondary": "#475569",
+            "text_muted": "#64748B",
+            "border": "#CBD5E1",
+            "input_border": "#94A3B8",
+            "grid": "#E2E8F0",
+            "primary": "#4F46E5",
+            "secondary": "#7C3AED",
+            "accent": "#4F46E5",
+            "gradient": "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+            "hover": "#E2E8F0",
+            "focus": "rgba(79, 70, 229, 0.12)",
+            "shadow": "none",
+            "card_shadow": "none"
         }
     return {
         "bg": "#0f172a",
         "bg_card": "#1e293b",
+        "bg_sidebar": "#0f172a",
         "text": "#e2e8f0",
-        "text_muted": "#94a3b8",
+        "text_secondary": "#94a3b8",
+        "text_muted": "#64748b",
         "border": "#334155",
-        "grid": "#1e293b"
+        "input_border": "#334155",
+        "grid": "#1e293b",
+        "primary": "#667eea",
+        "secondary": "#764ba2",
+        "accent": "#667eea",
+        "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        "hover": "#2d3748",
+        "focus": "rgba(102, 126, 234, 0.2)",
+        "shadow": "none",
+        "card_shadow": "none"
     }
 
 
-def render_header():
-    """Render the application header."""
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem 0 2rem 0;">
+def render_header(theme="Dark"):
+    """Render a compact, modern premium SaaS hero section."""
+    t = get_theme_colors(theme)
+    gradient = t["gradient"]
+    shadow = t["shadow"] if theme == "Light" else "none"
+    
+    st.markdown(f"""
+    <div style="text-align: center; padding: 2rem 0 3rem 0;">
+        <div style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px; height: 48px;
+            background: {gradient};
+            border-radius: 14px;
+            margin-bottom: 1.25rem;
+            box-shadow: {shadow};
+        ">
+            <span style="font-size: 1.75rem;">🧪</span>
+        </div>
         <h1 style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: {gradient};
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 2.5rem;
+            background-clip: text;
+            color: {t['primary']};
+            font-size: 2.75rem;
             font-weight: 800;
-            margin-bottom: 0.5rem;
-        ">🧪 AI Test Generator</h1>
-        <p style="color: #94a3b8; font-size: 1.1rem; font-weight: 300;">
-            Intelligent Automated Test Case Generation System
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+        ">AI Test Generator</h1>
+        <p style="
+            color: {t['text_secondary']};
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-top: 0.75rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+            letter-spacing: -0.01em;
+            line-height: 1.5;
+        ">
+            Professional AI-powered static analysis and automated test generation for high-quality Python codebases.
         </p>
         <div style="
-            width: 100px; height: 3px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 1rem auto; border-radius: 2px;
+            width: 40px; height: 3px;
+            background: {t['primary']}40;
+            margin: 1.5rem auto;
+            border-radius: 2px;
         "></div>
     </div>
     """, unsafe_allow_html=True)
 
 
-def render_metric_card(title: str, value: str, subtitle: str = "", icon: str = "📊", color: str = "#667eea", theme: str = "Dark"):
-    """Render a styled metric card."""
+def render_metric_card(title: str, value: str, subtitle: str = "", icon: str = "📊", color: str = None, theme: str = "Dark"):
+    """Render a high-contrast premium metric card."""
     t = get_theme_colors(theme)
+    if color is None:
+        color = t["primary"]
+        
+    shadow = t["card_shadow"] if theme == "Light" else "none"
+    
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, {color}15, {color}08);
         background-color: {t['bg_card']};
         border: 1px solid {t['border']};
-        border-radius: 12px;
-        padding: 1.25rem;
-        text-align: center;
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: left;
+        box-shadow: {shadow};
+        transition: all 0.3s ease;
     ">
-        <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">{icon}</div>
-        <div style="font-size: 1.8rem; font-weight: 700; color: {color};">{value}</div>
-        <div style="font-size: 0.85rem; font-weight: 600; color: {t['text']}; margin-top: 0.2rem;">{title}</div>
-        <div style="font-size: 0.75rem; color: {t['text_muted']}; margin-top: 0.1rem;">{subtitle}</div>
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        ">
+            <div style="
+                width: 36px; height: 36px;
+                display: flex; align-items: center; justify-content: center;
+                background: {color}15;
+                border: 1px solid {color}30;
+                border-radius: 10px;
+                font-size: 1.1rem;
+            ">{icon}</div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: {t['text_secondary']}; letter-spacing: 0.05em; text-transform: uppercase;">{title}</div>
+        </div>
+        <div style="font-size: 2rem; font-weight: 800; color: {t['text']}; line-height: 1; letter-spacing: -0.02em;">{value}</div>
+        <div style="font-size: 0.85rem; color: {t['text_muted']}; margin-top: 0.6rem; font-weight: 600;">{subtitle}</div>
     </div>
     """, unsafe_allow_html=True)
 

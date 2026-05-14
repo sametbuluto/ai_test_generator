@@ -33,7 +33,7 @@ from executor.coverage_runner import CoverageRunner
 from optimizer.duplicate_remover import DuplicateRemover
 from optimizer.prioritizer import TestPrioritizer
 from frontend.components import (
-    render_header, render_metric_card, render_status_badge,
+    get_theme_colors, render_header, render_metric_card, render_status_badge,
     render_coverage_gauge, render_test_results_chart,
     render_priority_chart, render_complexity_chart,
     render_pipeline_status
@@ -51,124 +51,165 @@ def setup_page(theme="Dark"):
         initial_sidebar_state="expanded"
     )
     
-    if theme == "Light":
-        bg_color = "#f8fafc"
-        bg_secondary = "#ffffff"
-        text_color = "#334155"
-        text_muted = "#64748b"
-        border_color = "#e2e8f0"
-    else:
-        bg_color = "#0f172a"
-        bg_secondary = "#1e293b"
-        text_color = "#e2e8f0"
-        text_muted = "#94a3b8"
-        border_color = "#334155"
+    t = get_theme_colors(theme)
+    
+    bg_color = t["bg"]
+    bg_secondary = t["bg_card"]
+    sidebar_bg = t["bg_sidebar"]
+    text_color = t["text"]
+    text_muted = t["text_muted"]
+    border_color = t["border"]
+    input_border = t["input_border"]
+    primary_gradient = t["gradient"]
+    accent_color = t["primary"]
+    hover_color = t["hover"]
+    focus_glow = t["focus"]
 
     # Custom CSS
     st.markdown(f"""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        /* Reset & Hide Streamlit elements */
+        header[data-testid="stHeader"], footer {{
+            visibility: hidden;
+            height: 0;
+            padding: 0;
+        }}
         
         .stApp {{
-            font-family: 'Inter', sans-serif;
-            background-color: {bg_color};
-            color: {text_color};
+            font-family: 'Inter', 'Manrope', sans-serif;
+            background-color: {bg_color} !important;
+            color: {text_color} !important;
         }}
         
-        /* Dark/Light theme overrides */
+        /* Global Text Force */
+        .stApp p, .stApp span, .stApp label, .stApp li, .stApp div {{
+            color: {text_color} !important;
+        }}
+        
+        /* Layout Spacing */
+        .block-container {{ 
+            padding: 1rem 6rem 3rem 6rem !important; 
+            max-width: 1300px !important;
+        }}
+        
+        /* Sidebar Panel */
+        section[data-testid="stSidebar"] {{
+            background-color: {sidebar_bg} !important;
+            border-right: 1px solid {border_color} !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            top: 0 !important;
+        }}
+        
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p, 
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] span {{
+            color: {text_color} !important;
+            font-weight: 700 !important;
+            font-size: 0.9rem !important;
+        }}
+        
+        /* Inputs & Textarea - High Contrast Fix */
         .stTextArea textarea {{
             background-color: {bg_secondary} !important;
-            color: {text_color} !important;
-            border: 1px solid {border_color} !important;
-            border-radius: 8px !important;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
-            font-size: 0.85rem !important;
+            color: {text_color} !important; /* Force dark text in light mode */
+            border: 1px solid {input_border} !important;
+            border-radius: 12px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 1rem !important;
+            padding: 1.5rem !important;
+            line-height: 1.7 !important;
+            transition: all 0.2s ease !important;
         }}
         
+        .stTextArea textarea:focus {{
+            border-color: {accent_color} !important;
+            box-shadow: 0 0 0 4px {focus_glow} !important;
+            background-color: {bg_secondary} !important;
+        }}
+        
+        /* Fix for radio button labels and text */
+        .stRadio label {{
+            color: {text_color} !important;
+            font-weight: 600 !important;
+        }}
+        
+        /* Buttons */
         .stButton > button {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: {primary_gradient} !important;
             color: white !important;
             border: none !important;
-            border-radius: 8px !important;
-            padding: 0.6rem 1.5rem !important;
-            font-weight: 600 !important;
-            font-size: 0.9rem !important;
-            transition: all 0.3s ease !important;
+            border-radius: 10px !important;
+            padding: 0.85rem 2rem !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+            letter-spacing: -0.01em !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }}
         
         .stButton > button:hover {{
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(102,126,234,0.4) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px {accent_color}30 !important;
         }}
         
-        .stSelectbox > div > div {{
+        /* Headings */
+        h1, h2, h3, h4 {{ 
+            font-family: 'Manrope', 'Inter', sans-serif !important;
+            color: {text_color} !important; 
+            font-weight: 800 !important;
+            letter-spacing: -0.03em !important;
+            margin-bottom: 1.5rem !important;
+        }}
+        
+        /* Metrics Container */
+        .stMetric, div[data-testid="metric-container"] {{
             background-color: {bg_secondary} !important;
             border: 1px solid {border_color} !important;
-            border-radius: 8px !important;
-            color: {text_color} !important;
+            border-radius: 16px !important;
+            padding: 1rem !important;
         }}
         
-        .stTabs [data-baseweb="tab-list"] {{
-            gap: 8px;
+        /* Status badge fix */
+        .stAlert p {{
+            color: inherit !important;
         }}
-        
-        .stTabs [data-baseweb="tab"] {{
-            background-color: {bg_secondary};
-            border-radius: 8px;
-            color: {text_muted};
-            padding: 8px 16px;
-        }}
-        
-        .stTabs [aria-selected="true"] {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-        }}
-        
-        .stExpander {{
-            background-color: {bg_secondary} !important;
-            border: 1px solid {border_color} !important;
-            border-radius: 10px !important;
-        }}
-        
-        h1, h2, h3, h4 {{ color: {text_color} !important; }}
-        p, li {{ color: {text_color}; }}
-        
-        .stCodeBlock {{ border-radius: 10px !important; }}
-        
-        div[data-testid="stSidebar"] {{
-            background-color: {bg_color};
-            border-right: 1px solid {border_color};
-        }}
-        
-        .stFileUploader {{
-            background-color: {bg_secondary};
-            border: 2px dashed {border_color};
-            border-radius: 12px;
-            padding: 1rem;
-        }}
-        
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {{ width: 6px; height: 6px; }}
-        ::-webkit-scrollbar-track {{ background: {bg_color}; }}
-        ::-webkit-scrollbar-thumb {{ background: {border_color}; border-radius: 3px; }}
-        ::-webkit-scrollbar-thumb:hover {{ background: {text_muted}; }}
-        
-        .block-container {{ padding: 1rem 2rem !important; }}
     </style>
     """, unsafe_allow_html=True)
 
 
 # ─── Sidebar ──────────────────────────────────────────────────
 def render_sidebar():
+    t = get_theme_colors(st.session_state.get("theme", "Dark"))
+    primary_gradient = t["gradient"]
+
     with st.sidebar:
-        st.markdown("""
-        <div style="text-align:center; padding: 1rem 0;">
+        st.markdown(f"""
+        <div style="text-align:center; padding: 2rem 0 1.5rem 0;">
+            <div style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 42px; height: 42px;
+                background: {primary_gradient};
+                border-radius: 12px;
+                margin-bottom: 1rem;
+                box-shadow: 0 8px 16px {t['primary']}30;
+            ">
+                <span style="font-size: 1.5rem;">🧪</span>
+            </div>
             <h2 style="
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                font-size: 1.3rem;
-            ">⚙️ Settings</h2>
+                color: {t['text']};
+                font-size: 1.25rem;
+                font-weight: 800;
+                margin: 0;
+                letter-spacing: -0.02em;
+            ">Settings</h2>
         </div>
         """, unsafe_allow_html=True)
         
@@ -255,7 +296,7 @@ def run_dashboard():
         st.session_state.theme = "Dark"
         
     setup_page(st.session_state.theme)
-    render_header()
+    render_header(st.session_state.theme)
     settings = render_sidebar()
     
     # Initialize session state
